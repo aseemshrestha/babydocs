@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.babydocs.constants.ApiConstants;
+import com.babydocs.exceptions.BadRequestException;
 import com.babydocs.logger.AppLogger;
 import com.babydocs.model.User;
 import com.babydocs.security.JwtProperties;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,10 +34,13 @@ public class TokenController
     }
 
     @GetMapping( "v1/public/token-refresh" )
-    public ResponseEntity<?> tokenRefresh(HttpServletRequest request, HttpServletResponse response) throws IOException
+    public ResponseEntity<?> tokenRefresh(HttpServletRequest request)
     {
         String tokenHeader = request.getHeader(JwtProperties.REFRESH_TOKEN);
-        String _token = tokenHeader.substring("Bearer ".length());
+        if (tokenHeader == null) {
+            throw new BadRequestException("Refresh token is missing");
+        }
+        String _token = tokenHeader.substring(JwtProperties.TOKEN_PREFIX.length());
         Algorithm algorithm = Algorithm.HMAC512(JwtProperties.SECRET.getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(_token);
