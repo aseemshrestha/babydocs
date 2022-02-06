@@ -62,10 +62,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
             .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userRepository))
             .authorizeRequests()
             // configure access role
-            .antMatchers("/login", "v1/public/token-refresh/**").permitAll()
+            .antMatchers("/login").permitAll()
             .antMatchers("/api/v1/public/**").permitAll()
-            .antMatchers("/api/v1/secured/**").hasAnyRole(ROLE_REGISTERED_USER, ROLE_ADMIN)
-            .antMatchers("/api/admin/**").hasRole(ROLE_ADMIN)
+            .antMatchers("/api/v1/secured/**").hasAnyRole(ROLE_REGISTERED_USER, ROLE_ADMIN, ROLE_SUPER_ADMIN)
+            .antMatchers("/api/admin/**").hasAnyRole(ROLE_ADMIN, ROLE_SUPER_ADMIN)
             .antMatchers("/api/superadmin/**").hasRole(ROLE_SUPER_ADMIN)
             .and()
             .httpBasic();
