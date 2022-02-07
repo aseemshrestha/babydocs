@@ -1,6 +1,6 @@
 package com.babydocs.exceptions;
 
-public class ResourceNotFoundException extends RuntimeException
+public final class ResourceNotFoundException extends RuntimeException
 {
     public ResourceNotFoundException(String message)
     {

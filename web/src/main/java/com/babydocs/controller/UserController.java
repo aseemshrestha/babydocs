@@ -22,21 +22,9 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping( ApiConstants.API )
-public class UserController
+public record UserController(AppService appService, UserValidationService userValidationService,
+                             PasswordEncoder passwordEncoder)
 {
-
-    private final AppService appService;
-    private final UserValidationService userValidationService;
-    private final PasswordEncoder passwordEncoder;
-
-    public UserController(AppService appService, UserValidationService userValidationService,
-        PasswordEncoder passwordEncoder)
-    {
-        this.appService = appService;
-        this.userValidationService = userValidationService;
-        this.passwordEncoder = passwordEncoder;
-    }
-
     @GetMapping( "v1/secured/get-user/{username}" )
     public ResponseEntity<User> getUser(@PathVariable( "username" ) @NotNull String username,
         HttpServletRequest request) throws Exception

@@ -24,15 +24,8 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping( ApiConstants.API )
-public class TokenController
+public record TokenController(AppService appService)
 {
-    private final AppService appService;
-
-    public TokenController(AppService appService)
-    {
-        this.appService = appService;
-    }
-
     @GetMapping( "v1/public/token-refresh" )
     public ResponseEntity<?> tokenRefresh(HttpServletRequest request)
     {
