@@ -44,4 +44,10 @@ public class AppService
     {
         return this.userRepository.findByUsername(username);
     }
+
+    @Transactional( rollbackFor = Exception.class )
+    public int updatePassword(String username, String password)
+    {
+        return userRepository.updatePassword(username, password);
+    }
 }

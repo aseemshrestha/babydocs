@@ -66,7 +66,7 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler
 
     }
 
-    @ExceptionHandler( Exception.class )
+    @ExceptionHandler( { Exception.class, GenericAppException.class } )
     public final ResponseEntity<Object> handleAlException(Exception ex, WebRequest request)
     {
         ApiException apiException =
