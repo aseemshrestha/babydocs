@@ -1,5 +1,6 @@
 package com.babydocs.model;
 
+
 import com.babydocs.annotations.ValidEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -51,7 +52,7 @@ public class User
     private int isActive;
 
     @ValidEnum( targetClassType = Gender.class, message = "Gender is empty or not valid" )
-    private String gender;
+    private Gender gender;
 
     @Temporal( TemporalType.TIMESTAMP )
     @Column( name = "created", nullable = false, updatable = false )

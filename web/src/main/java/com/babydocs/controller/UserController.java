@@ -11,7 +11,7 @@ import com.babydocs.exceptions.GenericAppException;
 import com.babydocs.exceptions.ResourceNotFoundException;
 import com.babydocs.logger.AppLogger;
 import com.babydocs.model.*;
-import com.babydocs.service.AppService;
+import com.babydocs.service.UserAndRoleService;
 import com.babydocs.service.PasswordResetService;
 import com.babydocs.service.UserValidationService;
 import com.babydocs.utils.AppUtils;
@@ -33,7 +33,7 @@ import static com.babydocs.constants.AppConstants.RESET_PASS_EXPIRY_HOURS;
 
 @RestController
 @RequestMapping( ApiConstants.API )
-public record UserController(AppService appService, UserValidationService userValidationService,
+public record UserController(UserAndRoleService userAndRoleService, UserValidationService userValidationService,
                              PasswordEncoder passwordEncoder, EmailService emailService,
                              PasswordResetService passwordResetService)
 {
@@ -42,8 +42,8 @@ public record UserController(AppService appService, UserValidationService userVa
         HttpServletRequest request) throws Exception
     {
         this.userValidationService.isLoggedUserValid(username, request);
-        Optional<User> user = this.appService.getUser(username);
-        if (!user.isPresent()) {
+        Optional<User> user = this.userAndRoleService.getUser(username);
+        if (user.isEmpty()) {
             AppLogger.info(UserController.class, "Username " + username + " not found");
             throw new ResourceNotFoundException("Username not found");
         }
@@ -77,21 +77,20 @@ public record UserController(AppService appService, UserValidationService userVa
             .lastUpdated(new Date())
             .build();
 
-        this.appService.saveUser(userToSave);
+        final User savedUser = this.userAndRoleService.saveUser(userToSave);
 
         AppLogger.info(UserController.class,
                        "User successfully created:" + "name:" + user.getFirstName() + " " + user.getLastName() + " "
                            + user.getEmail());
-        return new ResponseEntity<>(userToSave, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
     @PostMapping( "v1/public/password-reset" )
-    public ResponseEntity<?> forgotPassword(@RequestBody @NotNull ForgotPassword passReset, HttpServletRequest request)
-        throws Exception
+    public ResponseEntity<?> forgotPassword(@RequestBody @NotNull ForgotPassword passReset)
     {
 
-        Optional<User> user = this.appService.getUser(passReset.getEmail());
-        if (!user.isPresent()) {
+        Optional<User> user = this.userAndRoleService.getUser(passReset.getEmail());
+        if (user.isEmpty()) {
             throw new ResourceNotFoundException("User not found. Please try again");
         }
         String sixDigitNumber = ResetCodeGenerator.generateResetCode();
@@ -126,18 +125,17 @@ public record UserController(AppService appService, UserValidationService userVa
         }
         Optional<PasswordReset> passwordReset =
             passwordResetService.getPasswordReset(passwordResetSubmit.getResetCode());
-
-        if (!passwordReset.isPresent()) {
+        if (passwordReset.isEmpty()) {
             throw new BadRequestException("Reset Code not found. Please try again");
         }
-
         if (!passwordResetSubmit.getUsername().equals(passwordReset.get().getUsername())) {
             throw new BadRequestException("Username doesn't match. Please try again");
         }
-
-        User user = appService.getUser(passwordResetSubmit.getUsername()).get();
-
-        if (passwordEncoder.matches(passwordResetSubmit.getPassword(), user.getPassword())) {
+        Optional<User> user = userAndRoleService.getUser(passwordResetSubmit.getUsername());
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        if (passwordEncoder.matches(passwordResetSubmit.getPassword(), user.get().getPassword())) {
             throw new BadRequestException("You cannot use the same password you have used before.");
         }
         long duration = new Date().getTime() - passwordReset.get().getExpiresAt().getTime();
@@ -146,8 +144,8 @@ public record UserController(AppService appService, UserValidationService userVa
             throw new ResourceNotFoundException(
                 "Reset Code is expired. Please resubmit the password reset request.");
         }
-        this.appService.updatePassword(passwordReset.get().getUsername(),
-                                       passwordEncoder.encode(passwordResetSubmit.getPassword()));
+        this.userAndRoleService.updatePassword(passwordReset.get().getUsername(),
+                                               passwordEncoder.encode(passwordResetSubmit.getPassword()));
 
         return new ResponseEntity<>("Password Successfully updated. Please relogin with new password.", HttpStatus.OK);
 

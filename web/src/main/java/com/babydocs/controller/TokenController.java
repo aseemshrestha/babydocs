@@ -9,7 +9,7 @@ import com.babydocs.exceptions.BadRequestException;
 import com.babydocs.logger.AppLogger;
 import com.babydocs.model.User;
 import com.babydocs.security.JwtProperties;
-import com.babydocs.service.AppService;
+import com.babydocs.service.UserAndRoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +24,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping( ApiConstants.API )
-public record TokenController(AppService appService)
+public record TokenController(UserAndRoleService userAndRoleService)
 {
     @GetMapping( "v1/public/token-refresh" )
     public ResponseEntity<?> tokenRefresh(HttpServletRequest request)
@@ -38,7 +38,7 @@ public record TokenController(AppService appService)
         JWTVerifier verifier = JWT.require(algorithm).build();
         DecodedJWT decodedJWT = verifier.verify(_token);
         String username = decodedJWT.getSubject();
-        Optional<User> user = appService.getUser(username);
+        Optional<User> user = userAndRoleService.getUser(username);
         String role = "";
         if (user.isPresent()) {
             User _user = user.get();

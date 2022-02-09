@@ -5,7 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
-@ComponentScan( basePackages = "com.babydocs.*" )
+@ComponentScan( basePackages = {"com.babydocs.*","com.babydocs.annotations.*" })
 @EntityScan( basePackages = "com.babydocs.*" )
 @EnableJpaRepositories( basePackages = {"com.babydocs.*"} )
 

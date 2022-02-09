@@ -2,7 +2,7 @@ package com.babydocs.seed;
 
 import com.babydocs.constants.RoleBuilder;
 import com.babydocs.model.Role;
-import com.babydocs.service.AppService;
+import com.babydocs.service.UserAndRoleService;
 import com.babydocs.utils.ConfigUtility;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -14,12 +14,12 @@ import java.util.List;
 public class DbInit implements CommandLineRunner
 {
     private final ConfigUtility configUtility;
-    private final AppService appService;
+    private final UserAndRoleService userAndRoleService;
 
-    public DbInit(ConfigUtility configUtility, AppService appService)
+    public DbInit(ConfigUtility configUtility, UserAndRoleService userAndRoleService)
     {
         this.configUtility = configUtility;
-        this.appService = appService;
+        this.userAndRoleService = userAndRoleService;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class DbInit implements CommandLineRunner
         roles.add(RoleBuilder.getSiteUser());
         roles.add(RoleBuilder.getSuperAdmin());
 
-        roles.forEach(r -> appService.saveRole(r));
+        roles.forEach(r -> userAndRoleService.saveRole(r));
 
     }
 

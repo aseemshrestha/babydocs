@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class AppService
+public class UserAndRoleService
 {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
 
-    public AppService(RoleRepository roleRepository, UserRepository userRepository)
+    public UserAndRoleService(RoleRepository roleRepository, UserRepository userRepository)
     {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
@@ -29,9 +29,9 @@ public class AppService
     }
 
     @Transactional( rollbackFor = Exception.class )
-    public void saveUser(User user)
+    public User saveUser(User user)
     {
-        this.userRepository.save(user);
+        return this.userRepository.save(user);
     }
 
     @Transactional( rollbackFor = Exception.class )
