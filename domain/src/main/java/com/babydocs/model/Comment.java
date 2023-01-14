@@ -1,28 +1,26 @@
 package com.babydocs.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
-import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Builder
-@Data
-public class PasswordReset implements Serializable {
+@Table(name = "comment")
+public class Comment implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @NotNull
-    private String username;
-    @NotNull
-    private String resetCode;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date expiresAt;
+    private String comment;
+    private String commentedBy;
+    @JsonIgnore
+    @ManyToOne(cascade = CascadeType.ALL)
+    private Post post;
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created", nullable = false, updatable = false)
     @CreatedDate

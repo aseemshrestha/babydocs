@@ -72,7 +72,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
             .sign(Algorithm.HMAC512(JwtProperties.SECRET.getBytes()));
 
         response.addHeader(JwtProperties.ACCESS_TOKEN, JwtProperties.TOKEN_PREFIX + auth_token);
-        response.addHeader(JwtProperties.REFRESH_TOKEN, JwtProperties.TOKEN_PREFIX + refresh_token);
+        response.addHeader(JwtProperties.REFRESH_TOKEN,  refresh_token);
         response.addHeader("FullName", principal.getFullName());
 
     }

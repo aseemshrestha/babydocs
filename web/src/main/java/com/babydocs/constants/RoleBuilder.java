@@ -1,6 +1,7 @@
 package com.babydocs.constants;
 
 import com.babydocs.model.Role;
+import lombok.Builder;
 
 public class RoleBuilder
 {

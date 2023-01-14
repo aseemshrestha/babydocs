@@ -12,13 +12,11 @@ import java.io.Serializable;
 @Data
 @Builder
 @AllArgsConstructor
-public class Role implements Serializable
-{
+public class Role implements Serializable {
     @Id
     private int id;
     private String role;
 
-    public Role()
-    {
+    public Role() {
     }
 }

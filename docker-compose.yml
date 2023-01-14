@@ -12,6 +12,6 @@ services:
     expose:
       - '3306'
     volumes:
-      - /Users/aseshres/Desktop/db:/var/lib/mysql
+      - /Users/aseem/Documents/db:/var/lib/mysql
 volumes:
   db-babydocs:

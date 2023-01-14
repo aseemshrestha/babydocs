@@ -13,11 +13,8 @@ import java.lang.annotation.Target;
 public @interface ValidEnum
 {
     Class<? extends Enum<?>> targetClassType();
-
     String message() default "Value is not valid";
-
     Class<?>[] groups() default {};
-
     Class<? extends Payload>[] payload() default {};
 
 }
