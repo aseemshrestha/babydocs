@@ -11,6 +11,6 @@ import java.util.Optional;
 @Repository
 public interface BabyRepository extends JpaRepository<Baby, Long> {
     @Query("SELECT b from Baby b where b.user.username = :username")
-   Optional<List<Baby>> findBabyByUsername(String username);
+    Optional<List<Baby>> findBabyByUsername(String username);
 }
 

@@ -20,6 +20,10 @@ public class AWSConfig {
     @Value("${aws.s3.region}")
     private String region;
 
+    public static String getS3EndPoint() {
+        return "https://babydocs-test-bucket-1.s3.amazonaws.com/";
+    }
+
     @Bean
     public AmazonS3 getAmazonS3Client() {
         final BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(accessKeyId, secretAccessKey);
@@ -28,9 +32,5 @@ public class AWSConfig {
                 .withRegion(Regions.fromName(region))
                 .withCredentials(new AWSStaticCredentialsProvider(basicAWSCredentials))
                 .build();
-    }
-
-    public static String getS3EndPoint() {
-        return S3_END_POINT;
     }
 }

@@ -9,7 +9,10 @@ import com.babydocs.exceptions.BadRequestException;
 import com.babydocs.exceptions.GenericAppException;
 import com.babydocs.exceptions.ResourceNotFoundException;
 import com.babydocs.logger.AppLogger;
-import com.babydocs.model.*;
+import com.babydocs.model.Mail;
+import com.babydocs.model.PasswordReset;
+import com.babydocs.model.PasswordResetSubmit;
+import com.babydocs.model.User;
 import com.babydocs.service.PasswordResetService;
 import com.babydocs.service.UserAndRoleService;
 import com.babydocs.service.UserValidationService;
@@ -19,7 +22,13 @@ import eu.bitwalker.useragentutils.UserAgent;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -71,36 +80,32 @@ public record UserController(UserAndRoleService userAndRoleService, UserValidati
         AppLogger.info(UserController.class,
                 "User successfully created:" + "name:" + user.getFirstName() + " " + user.getLastName() + " "
                         + user.getEmail());
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        return new ResponseEntity<>(user, HttpStatus.CREATED);
     }
 
-    @PostMapping("v1/public/password-reset")
-    public ResponseEntity<?> forgotPassword(@RequestBody @NotNull ForgotPassword passReset) {
 
-        Optional<User> user = this.userAndRoleService.getUser(passReset.getEmail());
+    @PostMapping("v1/public/password-reset")
+    public ResponseEntity<?> forgotPassword(@RequestParam(value = "email") String email) {
+
+        Optional<User> user = this.userAndRoleService.getUser(email);
         if (user.isEmpty()) {
             throw new ResourceNotFoundException("User not found. Please try again");
         }
         String sixDigitNumber = ResetCodeGenerator.generateResetCode();
         Mail mail =
-                Mail.builder().toEmail(passReset.getEmail()).subject(AppConstants.FORGOT_PASS_SUBJECT)
+                Mail.builder().toEmail(email).subject(AppConstants.FORGOT_PASS_SUBJECT)
                         .name(user.get().getFirstName())
                         .username(user.get().getUsername())
                         .randomCode(sixDigitNumber)
                         .message(AppConstants.FORGOT_PASS_MESSAGE).build();
 
-        PasswordReset pr = PasswordReset.builder()
-                .username(user.get().getUsername())
-                .resetCode(sixDigitNumber)
-                .expiresAt(AppUtils.addHours(new Date(), RESET_PASS_EXPIRY_HOURS))
-                .created(new Date())
-                .lastUpdated(new Date())
-                .build();
 
-     /*   pr.setResetCode(sixDigitNumber);
+        PasswordReset pr = new PasswordReset();
+        pr.setUsername(user.get().getUsername());
+        pr.setResetCode(sixDigitNumber);
         pr.setExpiresAt(AppUtils.addHours(new Date(), RESET_PASS_EXPIRY_HOURS));
         pr.setCreated(new Date());
-        pr.setLastUpdated(new Date());*/
+        pr.setLastUpdated(new Date());
 
         try {
             this.emailService.sendMail(mail, MailType.PASSWORD_RESET);

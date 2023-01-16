@@ -1,10 +1,6 @@
 package com.babydocs.model;
 
-import com.babydocs.annotations.ValidEnum;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -34,7 +30,6 @@ public class Baby implements Serializable {
     @NotEmpty(message = "Dob is required")
     private Date dob;
 
-    @ValidEnum(targetClassType = Gender.class, message = "Gender is empty or not valid")
     private String gender;
 
     @Temporal(TemporalType.TIMESTAMP)

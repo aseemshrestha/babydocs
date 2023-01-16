@@ -1,7 +1,9 @@
 package com.babydocs.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
@@ -11,8 +13,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Builder
 @Data
+@NoArgsConstructor
 public class PasswordReset implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

@@ -1,13 +1,23 @@
 package com.babydocs.model;
 
-
-import com.babydocs.annotations.ValidEnum;
+import com.babydocs.annotations.EnumValidation;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.Date;
@@ -38,6 +48,7 @@ public class User implements Serializable {
 
     @Column(nullable = false, unique = true, length = 200)
     @NotEmpty(message = "Email is required")
+    @Email
     private String email;
 
     private String ip;
@@ -53,9 +64,8 @@ public class User implements Serializable {
     @Column(name = "lastUpdated", nullable = false)
     @LastModifiedDate
     private Date lastUpdated;
-
-    @ValidEnum(targetClassType = Gender.class, message = "Gender is empty or not valid")
-    private Gender gender;
+    @EnumValidation()
+    private String gender;
     @ManyToOne
     @JoinColumn
     private Role role;

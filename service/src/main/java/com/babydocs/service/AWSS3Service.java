@@ -61,10 +61,10 @@ public class AWSS3Service {
             String dateTime = String.valueOf(LocalDateTime.now());
             String encodedDate = Base64.getEncoder().encodeToString(dateTime.getBytes());
             File file = convertMultiPartFileToFile(mf);
-            final String uniqueFileName = encodedDate + "_" + file.getName();
-            var request = new PutObjectRequest(bucket + "/" + path, uniqueFileName, file);
+            final String fileKey = encodedDate + "_" + Base64.getEncoder().encodeToString(path.getBytes());
+            var request = new PutObjectRequest(bucket, fileKey, file);
             putObjectRequests.add(request);
-            uploadedFiles.add(uniqueFileName);
+            uploadedFiles.add(fileKey);
         });
         Upload upload = null;
         for (var putObjectRequest : putObjectRequests) {
@@ -88,22 +88,23 @@ public class AWSS3Service {
     }
 
 
-    public void deleteFiles(String bucketName, List<String> keys) {
-
-        String[] filesToDelete = keys.toArray(String[]::new);
+    public int deleteFiles(String[] keys) throws Exception {
         DeleteObjectsRequest delObjReq = new DeleteObjectsRequest(bucket)
-                .withKeys(filesToDelete)
+                .withKeys(keys)
                 .withQuiet(false);
-
+        int successfulDeletes = 0;
         try {
             DeleteObjectsResult deleteObjectsResult = s3Client.deleteObjects(delObjReq);
-            int successfulDeletes = deleteObjectsResult.getDeletedObjects().size();
+            successfulDeletes = deleteObjectsResult.getDeletedObjects().size();
             log.info(successfulDeletes + " objects successfully deleted.");
         } catch (AmazonServiceException e) {
             log.info("Amazing Service Exception::Error deleting object from S3" + e);
+            throw new Exception("Amazing Service Exception::Error deleting object from S3", e);
         } catch (Exception e) {
             log.info("Exception while deleting a project" + e);
+            throw new Exception("Amazing Service Exception::Error deleting object from S3", e);
         }
+        return successfulDeletes;
 
     }
 

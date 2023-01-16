@@ -31,10 +31,10 @@ public record TokenController(UserAndRoleService userAndRoleService)
         if (tokenHeader == null) {
             throw new BadRequestException("Refresh token is missing");
         }
-        String _token = tokenHeader.substring(JwtProperties.TOKEN_PREFIX.length());
+       // String _token = tokenHeader.substring(JwtProperties.REFRESH_TOKEN.length());
         Algorithm algorithm = Algorithm.HMAC512(JwtProperties.SECRET.getBytes());
         JWTVerifier verifier = JWT.require(algorithm).build();
-        DecodedJWT decodedJWT = verifier.verify(_token);
+        DecodedJWT decodedJWT = verifier.verify(tokenHeader);
         String username = decodedJWT.getSubject();
         Optional<User> user = userAndRoleService.getUser(username);
         String role = "";
@@ -51,6 +51,7 @@ public record TokenController(UserAndRoleService userAndRoleService)
             .sign(Algorithm.HMAC512(JwtProperties.SECRET.getBytes()));
 
         AppLogger.info(UserController.class, "Auth Token created: " + auth_token);
+        System.out.println("Auth token created:" + auth_token);
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("access_token", JwtProperties.TOKEN_PREFIX + auth_token);
         tokenMap.put("refresh_token", tokenHeader);

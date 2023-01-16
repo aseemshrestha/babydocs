@@ -1,7 +1,5 @@
 package com.babydocs.model;
 
-import com.babydocs.Constants;
-import com.babydocs.annotations.ValidEnum;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -28,7 +26,6 @@ public class Post implements Serializable {
     private String albumName;
     private String ip;
     private String browser;
-    @ValidEnum(targetClassType = Constants.PostType.class, message = "Post type is not valid")
     private String postType;
     @Column(nullable = false)
     private String postedBy;

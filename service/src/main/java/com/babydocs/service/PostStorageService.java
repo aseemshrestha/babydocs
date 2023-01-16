@@ -25,4 +25,8 @@ public class PostStorageService {
     public Optional<List<Post>> getPosts(String username) {
         return postStorageRepository.findPostByUsername(username);
     }
+
+    public Post getPostById(Long id) {
+        return this.postStorageRepository.getById(id);
+    }
 }
