@@ -3,8 +3,12 @@ package com.babydocs.controller;
 import com.babydocs.exceptions.ResourceNotFoundException;
 import com.babydocs.model.Comment;
 import com.babydocs.model.CommentDTO;
+import com.babydocs.model.MediaComment;
+import com.babydocs.model.MediaCommentDTO;
+import com.babydocs.model.MediaFiles;
 import com.babydocs.model.Post;
 import com.babydocs.service.CommentService;
+import com.babydocs.service.MediaService;
 import com.babydocs.service.PostStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,6 +32,8 @@ public class CommentController {
 
     private final CommentService commentService;
     private final PostStorageService postStorageService;
+    private final MediaService mediaService;
+
 
     @PostMapping("v1/secured/post-comment")
     public ResponseEntity<Comment> createComment(@RequestBody CommentDTO comment,
@@ -51,5 +57,29 @@ public class CommentController {
     public ResponseEntity<List<Comment>> getCommentByPostId(@PathVariable(value = "postId") @NotNull Long postId) {
         List<Comment> commentsByPostId = this.commentService.getCommentsByPostId(postId);
         return new ResponseEntity<>(commentsByPostId, HttpStatus.OK);
+    }
+
+    @PostMapping("v1/secured/post-comment-media")
+    public ResponseEntity<MediaComment> createCommentMedia(@RequestBody MediaCommentDTO media,
+                                                           HttpServletRequest request) {
+        String loggedInUser = request.getUserPrincipal().getName();
+        MediaFiles mediaById = mediaService.getMediaById(media.getMediaId());
+        if (mediaById == null) {
+            throw new ResourceNotFoundException("Post with is {} not found%s".formatted(media.getMediaId().toString()));
+        }
+        var mediaComment = new MediaComment();
+        mediaComment.setComment(media.getComment());
+        mediaComment.setCommentedBy(loggedInUser);
+        mediaComment.setLastUpdated(new Date());
+        mediaComment.setCreated(new Date());
+        mediaComment.setMedia(mediaById);
+        final MediaComment savedComment = this.mediaService.saveMediaComment(mediaComment);
+        return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
+    }
+
+    @GetMapping("v1/secured/get-media-comments/{mediaId}")
+    public ResponseEntity<List<MediaComment>> getCommentsByMediaId(@PathVariable(value = "mediaId") @NotNull Long mediaId) {
+        List<MediaComment> mediaCommentsByMediaId = this.mediaService.getMediaCommentsByMediaId(mediaId);
+        return new ResponseEntity<>(mediaCommentsByMediaId, HttpStatus.OK);
     }
 }

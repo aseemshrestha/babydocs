@@ -62,7 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
             .addFilter(new JwtAuthorizationFilter(authenticationManager(), this.userRepository))
             .authorizeRequests()
             // configure access role
-            .antMatchers("/login").permitAll()
+            .antMatchers("/swagger-ui/**","/login").permitAll()
             .antMatchers("/api/v1/public/**").permitAll()
             .antMatchers("/api/v1/secured/**").hasAnyRole(ROLE_REGISTERED_USER, ROLE_ADMIN, ROLE_SUPER_ADMIN)
             .antMatchers("/api/admin/**").hasAnyRole(ROLE_ADMIN, ROLE_SUPER_ADMIN)

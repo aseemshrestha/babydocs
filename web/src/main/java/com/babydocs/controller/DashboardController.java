@@ -13,12 +13,15 @@ import com.babydocs.service.BabyService;
 import com.babydocs.service.MediaService;
 import com.babydocs.service.PostStorageService;
 import com.babydocs.service.UserAndRoleService;
+import com.babydocs.service.UserValidationService;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +48,7 @@ public class DashboardController {
     private final PostStorageService postStorageService;
     private final AWSS3Service awss3Service;
     private final MediaService mediaService;
+    private final UserValidationService userValidationService;
 
 
     @PostMapping("v1/secured/submit-baby-details")
@@ -131,5 +135,12 @@ public class DashboardController {
         }
         return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
 
+    }
+
+    @GetMapping("v1/secured/get-my-posts/{username}")
+    public ResponseEntity<?> getMyPosts(@PathVariable("username") String username, HttpServletRequest request) throws Exception {
+        userValidationService.isLoggedUserValid(username, request);
+        Optional<List<Post>> posts = postStorageService.getPosts(username);
+        return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 }

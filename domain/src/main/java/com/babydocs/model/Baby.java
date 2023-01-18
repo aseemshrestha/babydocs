@@ -1,5 +1,6 @@
 package com.babydocs.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -15,6 +16,7 @@ import java.util.Date;
 public class Baby implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     private Long id;
 
     @NotEmpty(message = "First Name is required")
@@ -35,15 +37,18 @@ public class Baby implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created", nullable = false, updatable = false)
     @CreatedDate
+    @JsonIgnore
     private Date created;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastUpdated", nullable = false)
     @LastModifiedDate
+    @JsonIgnore
     private Date lastUpdated;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_username", referencedColumnName = "username", nullable = false)
+    @JsonIgnore
     private User user;
 
 
