@@ -9,6 +9,6 @@ import javax.validation.constraints.NotEmpty;
 @NoArgsConstructor
 public class CommentDTO {
     public Long postId;
-    @NotEmpty (message = "Comment is required")
+    @NotEmpty(message = "Comment is required")
     public String comment;
 }

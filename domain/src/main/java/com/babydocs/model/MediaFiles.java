@@ -43,7 +43,7 @@ public class MediaFiles implements Serializable {
     @ManyToOne(cascade = CascadeType.ALL)
     private Post post;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "media", fetch = FetchType.LAZY)
-    private List<Comment> comment;
+    private List<MediaComment> comment;
 
 
 }

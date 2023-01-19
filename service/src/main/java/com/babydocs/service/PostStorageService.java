@@ -27,6 +27,12 @@ public class PostStorageService {
     }
 
     public Post getPostById(Long id) {
-        return this.postStorageRepository.getById(id);
+        return this.postStorageRepository.findPostById(id);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deletePost(Long id) {
+        this.postStorageRepository.deleteById(id);
+    }
+
 }

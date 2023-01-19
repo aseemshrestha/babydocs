@@ -23,7 +23,7 @@ public class Comment implements Serializable {
     private String comment;
     private String commentedBy;
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     private Post post;
 
     @JsonIgnore

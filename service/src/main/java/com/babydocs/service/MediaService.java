@@ -29,7 +29,7 @@ public class MediaService {
     }
 
     public MediaFiles getMediaById(Long id) {
-        return this.mediaRepository.getById(id);
+        return this.mediaCommentRepository.findMediaById(id);
     }
 
     public MediaComment getMediaCommentById(Long id) {
@@ -48,5 +48,10 @@ public class MediaService {
 
     public List<MediaComment> getMediaCommentsByMediaId(Long id) {
         return this.mediaCommentRepository.getMediaCommentsByMediaId(id);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteMedia(Long id) {
+        this.mediaRepository.deleteById(id);
     }
 }

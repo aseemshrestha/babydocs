@@ -38,7 +38,7 @@ public class Post implements Serializable {
     @Column(name = "lastUpdated", nullable = false)
     @LastModifiedDate
     private Date lastUpdated;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "post", fetch = FetchType.LAZY)
     private List<Comment> comment;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "post", fetch = FetchType.LAZY)
     private List<MediaFiles> mediaFiles;

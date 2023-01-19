@@ -4,12 +4,14 @@ import com.babydocs.Constants;
 import com.babydocs.config.AWSConfig;
 import com.babydocs.exceptions.BadRequestException;
 import com.babydocs.model.Baby;
+import com.babydocs.model.Comment;
 import com.babydocs.model.ImageDeleteDTO;
 import com.babydocs.model.MediaFiles;
 import com.babydocs.model.Post;
 import com.babydocs.model.User;
 import com.babydocs.service.AWSS3Service;
 import com.babydocs.service.BabyService;
+import com.babydocs.service.CommentService;
 import com.babydocs.service.MediaService;
 import com.babydocs.service.PostStorageService;
 import com.babydocs.service.UserAndRoleService;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -49,6 +52,7 @@ public class DashboardController {
     private final AWSS3Service awss3Service;
     private final MediaService mediaService;
     private final UserValidationService userValidationService;
+    private final CommentService commentService;
 
 
     @PostMapping("v1/secured/submit-baby-details")
@@ -119,7 +123,7 @@ public class DashboardController {
 
     }
 
-    @PostMapping("v1/secured/delete-image")
+    @DeleteMapping("v1/secured/delete-my-media")
     public ResponseEntity<String> deleteImage(@RequestBody ImageDeleteDTO[] imageDeleteDto) throws Exception {
         var filesToDelete = new String[imageDeleteDto.length];
         var idsToDelete = new Long[imageDeleteDto.length];
@@ -131,7 +135,7 @@ public class DashboardController {
 
         int deletedFiles = awss3Service.deleteFiles(filesToDelete);
         if (deletedFiles > 0) {
-            Arrays.stream(idsToDelete).forEach(this.mediaService::deleteImageById);
+            Arrays.stream(idsToDelete).forEach(this.mediaService::deleteMedia);
         }
         return new ResponseEntity<>("Successfully Deleted", HttpStatus.OK);
 
@@ -143,4 +147,27 @@ public class DashboardController {
         Optional<List<Post>> posts = postStorageService.getPosts(username);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
+
+    @DeleteMapping("v1/secured/delete-my-post/{postId}")
+    public ResponseEntity<?> deleteMyPost(@PathVariable("postId") Long postId, HttpServletRequest request) throws Exception {
+        postStorageService.deletePost(postId);
+        return new ResponseEntity<>("deleted successfully", HttpStatus.OK);
+    }
+
+    @DeleteMapping("v1/secured/delete-main-post-comment")
+    public ResponseEntity<?> deletePostComment(
+            @RequestParam(value = "commentId") Long commentId,
+            @RequestParam(value = "postId") Long postId,
+            HttpServletRequest request) {
+        String loggedInUsername = request.getUserPrincipal().getName();
+        Post postById = this.postStorageService.getPostById(postId);
+        if (postById.getPostedBy().equals(loggedInUsername)) {
+            this.commentService.deleteComment(commentId);
+        } else {
+            Comment comment = this.commentService.getCommentByUsernameAndCommentId(loggedInUsername, commentId);
+            this.commentService.deleteComment(comment.getId());
+        }
+        return new ResponseEntity<>("deleted successfully", HttpStatus.OK);
+    }
+
 }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
@@ -36,12 +37,12 @@ public class CommentController {
 
 
     @PostMapping("v1/secured/post-comment")
-    public ResponseEntity<Comment> createComment(@RequestBody CommentDTO comment,
+    public ResponseEntity<Comment> createComment(@RequestBody @Valid CommentDTO comment,
                                                  HttpServletRequest request) {
         String loggedInUser = request.getUserPrincipal().getName();
         Post postById = postStorageService.getPostById(comment.getPostId());
         if (postById == null) {
-            throw new ResourceNotFoundException("Post with is {} not found" + comment.getPostId().toString());
+            throw new ResourceNotFoundException("Post with " + comment.getPostId().toString() + " not found");
         }
         var comm = new Comment();
         comm.setComment(comment.getComment());
@@ -56,16 +57,19 @@ public class CommentController {
     @GetMapping("v1/secured/get-comments/{postId}")
     public ResponseEntity<List<Comment>> getCommentByPostId(@PathVariable(value = "postId") @NotNull Long postId) {
         List<Comment> commentsByPostId = this.commentService.getCommentsByPostId(postId);
+        if (commentsByPostId.isEmpty()) {
+            throw new ResourceNotFoundException("Post with " + postId + " not found");
+        }
         return new ResponseEntity<>(commentsByPostId, HttpStatus.OK);
     }
 
     @PostMapping("v1/secured/post-comment-media")
-    public ResponseEntity<MediaComment> createCommentMedia(@RequestBody MediaCommentDTO media,
+    public ResponseEntity<MediaComment> createCommentMedia(@RequestBody @Valid MediaCommentDTO media,
                                                            HttpServletRequest request) {
         String loggedInUser = request.getUserPrincipal().getName();
         MediaFiles mediaById = mediaService.getMediaById(media.getMediaId());
         if (mediaById == null) {
-            throw new ResourceNotFoundException("Post with is {} not found%s".formatted(media.getMediaId().toString()));
+            throw new ResourceNotFoundException("Post with media id " + media.getMediaId() + " not found");
         }
         var mediaComment = new MediaComment();
         mediaComment.setComment(media.getComment());
@@ -80,6 +84,9 @@ public class CommentController {
     @GetMapping("v1/secured/get-media-comments/{mediaId}")
     public ResponseEntity<List<MediaComment>> getCommentsByMediaId(@PathVariable(value = "mediaId") @NotNull Long mediaId) {
         List<MediaComment> mediaCommentsByMediaId = this.mediaService.getMediaCommentsByMediaId(mediaId);
+        if (mediaCommentsByMediaId.isEmpty()) {
+            throw new ResourceNotFoundException("Post with " + mediaId + " not found");
+        }
         return new ResponseEntity<>(mediaCommentsByMediaId, HttpStatus.OK);
     }
 }

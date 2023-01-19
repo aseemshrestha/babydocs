@@ -14,5 +14,8 @@ public interface PostStorageRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p from Post p where p.postedBy = :username order by p.lastUpdated desc")
     Optional<List<Post>> findPostByUsername(String username);
 
+    @Query("SELECT p from Post p where p.id = :id")
+    Post findPostById(Long id);
+
 }
 

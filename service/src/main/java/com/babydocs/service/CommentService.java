@@ -21,4 +21,13 @@ public class CommentService {
     public List<Comment> getCommentsByPostId(Long postId) {
         return this.commentRepository.getCommentByPostId(postId);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteComment(Long commentId) {
+        this.commentRepository.deleteById(commentId);
+    }
+
+    public Comment getCommentByUsernameAndCommentId(String username, Long id) {
+        return this.commentRepository.getCommentByUsernameAndCommentId(username, id);
+    }
 }
