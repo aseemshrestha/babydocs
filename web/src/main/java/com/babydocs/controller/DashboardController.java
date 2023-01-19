@@ -124,7 +124,7 @@ public class DashboardController {
     }
 
     @DeleteMapping("v1/secured/delete-my-media")
-    public ResponseEntity<String> deleteImage(@RequestBody ImageDeleteDTO[] imageDeleteDto) throws Exception {
+    public ResponseEntity<String> deleteImage(@RequestBody ImageDeleteDTO[] imageDeleteDto, HttpServletRequest request) throws Exception {
         var filesToDelete = new String[imageDeleteDto.length];
         var idsToDelete = new Long[imageDeleteDto.length];
 
@@ -149,8 +149,13 @@ public class DashboardController {
     }
 
     @DeleteMapping("v1/secured/delete-my-post/{postId}")
-    public ResponseEntity<?> deleteMyPost(@PathVariable("postId") Long postId, HttpServletRequest request) throws Exception {
-        postStorageService.deletePost(postId);
+    public ResponseEntity<?> deleteMyPost(@PathVariable("postId") Long postId, HttpServletRequest request) {
+        Post postById = this.postStorageService.getPostById(postId);
+        if (postById.getPostedBy().equals(request.getUserPrincipal().getName())) {
+            this.commentService.deleteComment(postId);
+        } else {
+            throw new BadRequestException("Not permitted to delete this post");
+        }
         return new ResponseEntity<>("deleted successfully", HttpStatus.OK);
     }
 
