@@ -29,12 +29,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -241,7 +241,7 @@ public class DashboardController {
     /*
       Add additional media ( images ) to existing post
      */
-    @PatchMapping("v1/secured/add-image-to-existing-album")
+    @PutMapping("v1/secured/add-image-to-existing-album")
     public ResponseEntity<Post> addAdditionMediaToExistingPost(@RequestParam(value = "postId") Long postId,
                                                                @RequestParam(value = "file") MultipartFile[] files,
                                                                HttpServletRequest request) throws Exception {
