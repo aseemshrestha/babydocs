@@ -215,9 +215,10 @@ public class DashboardController {
             @RequestParam(value = "postId") Long postId,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "album", required = false) String album, HttpServletRequest request) {
+            @RequestParam(value = "album", required = false) String album, HttpServletRequest request) throws Exception {
 
         Post post = postStorageService.getPostById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        userValidationService.isLoggedUserValid(post.getPostedBy(), request);
         if (StringUtils.isNotEmpty(title)) {
             post.setTitle(title);
         }
@@ -236,6 +237,40 @@ public class DashboardController {
         Post savedPost = postStorageService.savePosts(post);
         return new ResponseEntity<>(savedPost, HttpStatus.CREATED);
     }
+
+    /*
+      Add additional media ( images ) to existing post
+     */
+    @PatchMapping("v1/secured/add-image-to-existing-album")
+    public ResponseEntity<Post> addAdditionMediaToExistingPost(@RequestParam(value = "postId") Long postId,
+                                                               @RequestParam(value = "file") MultipartFile[] files,
+                                                               HttpServletRequest request) throws Exception {
+        Post post = postStorageService.getPostById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        String username = request.getUserPrincipal().getName();
+        userValidationService.isLoggedUserValid(username, request);
+        String path = username.substring(0, username.indexOf('@'));
+
+        if (files != null) {
+            List<String> uploadedFiles = awss3Service.uploadFileList(files, path);
+            List<MediaFiles> mediaList = new ArrayList<>();
+
+            uploadedFiles.forEach(f -> {
+                MediaFiles media = new MediaFiles();
+                media.setMediaLocation(AWSConfig.getS3EndPoint() + f);
+                media.setMediaType("image");
+                media.setMediaDescription(post.getDescription());
+                media.setCreated(new Date());
+                media.setLastUpdated(new Date());
+                media.setPost(post);
+                mediaList.add(media);
+            });
+            post.setMediaFiles(mediaList);
+        }
+        Post savedPost = postStorageService.savePosts(post);
+        return new ResponseEntity<>(savedPost, HttpStatus.OK);
+
+    }
+
 }
 
 
