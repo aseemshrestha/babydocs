@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,5 +30,9 @@ public class CommentService {
 
     public Comment getCommentByUsernameAndCommentId(String username, Long id) {
         return this.commentRepository.getCommentByUsernameAndCommentId(username, id);
+    }
+
+    public Optional<Comment> getCommentByCommentId(Long id) {
+        return this.commentRepository.findById(id);
     }
 }

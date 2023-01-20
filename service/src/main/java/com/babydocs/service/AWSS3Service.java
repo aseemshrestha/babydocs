@@ -58,10 +58,10 @@ public class AWSS3Service {
         List<PutObjectRequest> putObjectRequests = new ArrayList<>();
 
         Arrays.stream(multipartFile).forEach(mf -> {
-            String dateTime = String.valueOf(LocalDateTime.now());
-            String encodedDate = Base64.getEncoder().encodeToString(dateTime.getBytes());
+           // String dateTime = String.valueOf(LocalDateTime.now());
+          //  String encodedDate = Base64.getEncoder().encodeToString(dateTime.getBytes());
             File file = convertMultiPartFileToFile(mf);
-            final String fileKey = encodedDate + "_" + Base64.getEncoder().encodeToString(path.getBytes());
+            final String fileKey = Base64.getEncoder().encodeToString(path.getBytes());
             var request = new PutObjectRequest(bucket, fileKey, file);
             putObjectRequests.add(request);
             uploadedFiles.add(fileKey);

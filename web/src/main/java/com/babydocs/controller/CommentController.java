@@ -36,14 +36,17 @@ public class CommentController {
     private final MediaService mediaService;
 
 
+    /**
+     * Posts comment to a particular post.
+     */
     @PostMapping("v1/secured/post-comment")
     public ResponseEntity<Comment> createComment(@RequestBody @Valid CommentDTO comment,
                                                  HttpServletRequest request) {
         String loggedInUser = request.getUserPrincipal().getName();
-        Post postById = postStorageService.getPostById(comment.getPostId());
-        if (postById == null) {
-            throw new ResourceNotFoundException("Post with " + comment.getPostId().toString() + " not found");
-        }
+        Post postById = postStorageService
+                .getPostById(comment.getPostId())
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+
         var comm = new Comment();
         comm.setComment(comment.getComment());
         comm.setCommentedBy(loggedInUser);
@@ -54,6 +57,9 @@ public class CommentController {
         return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
     }
 
+    /*
+      Should return comment by postId.
+     */
     @GetMapping("v1/secured/get-comments/{postId}")
     public ResponseEntity<List<Comment>> getCommentByPostId(@PathVariable(value = "postId") @NotNull Long postId) {
         List<Comment> commentsByPostId = this.commentService.getCommentsByPostId(postId);
@@ -63,6 +69,9 @@ public class CommentController {
         return new ResponseEntity<>(commentsByPostId, HttpStatus.OK);
     }
 
+    /*
+       Posts comment to media like images which is a part of the post.
+     */
     @PostMapping("v1/secured/post-comment-media")
     public ResponseEntity<MediaComment> createCommentMedia(@RequestBody @Valid MediaCommentDTO media,
                                                            HttpServletRequest request) {
@@ -81,6 +90,9 @@ public class CommentController {
         return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
     }
 
+    /*
+      Should return media comments like comments on images.
+     */
     @GetMapping("v1/secured/get-media-comments/{mediaId}")
     public ResponseEntity<List<MediaComment>> getCommentsByMediaId(@PathVariable(value = "mediaId") @NotNull Long mediaId) {
         List<MediaComment> mediaCommentsByMediaId = this.mediaService.getMediaCommentsByMediaId(mediaId);

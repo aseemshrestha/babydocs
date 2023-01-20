@@ -3,6 +3,7 @@ package com.babydocs.controller;
 import com.babydocs.Constants;
 import com.babydocs.config.AWSConfig;
 import com.babydocs.exceptions.BadRequestException;
+import com.babydocs.exceptions.ResourceNotFoundException;
 import com.babydocs.model.Baby;
 import com.babydocs.model.Comment;
 import com.babydocs.model.ImageDeleteDTO;
@@ -20,10 +21,12 @@ import eu.bitwalker.useragentutils.UserAgent;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -55,6 +58,9 @@ public class DashboardController {
     private final CommentService commentService;
 
 
+    /*
+      Submit baby details. Child registration is mandatory to submit posts.
+     */
     @PostMapping("v1/secured/submit-baby-details")
     public ResponseEntity<Baby> submitBabyDetails(@RequestBody @Valid Baby baby, HttpServletRequest request) {
         baby.setLastUpdated(new Date());
@@ -66,12 +72,12 @@ public class DashboardController {
     }
 
 
+    /*
+       Submits post. Media like images are optional. User must register child account to submit the post.
+       By default, post are set as private, visible only to the user who submits the post.
+     */
     @PostMapping("v1/secured/submit-post")
-    public ResponseEntity<Post> createPost(@RequestParam(value = "title") String title,
-                                           @RequestParam(value = "description", required = false) String description,
-                                           @RequestParam(value = "file", required = false) MultipartFile[] files,
-                                           @RequestParam(value = "album", required = false) String album,
-                                           HttpServletRequest request) {
+    public ResponseEntity<Post> createPost(@RequestParam(value = "title") String title, @RequestParam(value = "description", required = false) String description, @RequestParam(value = "file", required = false) MultipartFile[] files, @RequestParam(value = "album", required = false) String album, HttpServletRequest request) {
 
         long start = System.currentTimeMillis();
         Optional<List<Baby>> babyByUserName = babyService.findBabyByUserName(request.getUserPrincipal().getName());
@@ -123,8 +129,17 @@ public class DashboardController {
 
     }
 
+    /*
+       Deletes images from s3. If image is deleted, should delete the related s3 location entry in database as well.
+       Only the user who submitted the post can delete his/her images.
+     */
     @DeleteMapping("v1/secured/delete-my-media")
-    public ResponseEntity<String> deleteImage(@RequestBody ImageDeleteDTO[] imageDeleteDto, HttpServletRequest request) throws Exception {
+    public ResponseEntity<String> deleteImage(@RequestBody @Valid ImageDeleteDTO[] imageDeleteDto, HttpServletRequest request) throws Exception {
+
+        MediaFiles mediaFile = mediaService.getMediaById(imageDeleteDto[0].getMediaId());
+        if (!mediaFile.getPost().getPostedBy().equals(request.getUserPrincipal().getName())) {
+            throw new BadRequestException("You are not authorized to perform delete operation.");
+        }
         var filesToDelete = new String[imageDeleteDto.length];
         var idsToDelete = new Long[imageDeleteDto.length];
 
@@ -141,6 +156,9 @@ public class DashboardController {
 
     }
 
+    /*
+     * Fetches logged-in user's post only. Should not fetch other users post.
+     */
     @GetMapping("v1/secured/get-my-posts/{username}")
     public ResponseEntity<?> getMyPosts(@PathVariable("username") String username, HttpServletRequest request) throws Exception {
         userValidationService.isLoggedUserValid(username, request);
@@ -148,31 +166,77 @@ public class DashboardController {
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
 
+    /*
+     *  Deletes a post of a user. Only the user who submitted the post can delete his/her post.
+     *  If the post is deleted, all comments, media uploads related to the post should be deleted.
+     */
     @DeleteMapping("v1/secured/delete-my-post/{postId}")
     public ResponseEntity<?> deleteMyPost(@PathVariable("postId") Long postId, HttpServletRequest request) {
-        Post postById = this.postStorageService.getPostById(postId);
+        Post postById = this.postStorageService.getPostById(postId)
+                .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         if (postById.getPostedBy().equals(request.getUserPrincipal().getName())) {
-            this.commentService.deleteComment(postId);
+            this.postStorageService.deletePost(postId);
         } else {
-            throw new BadRequestException("Not permitted to delete this post");
+            throw new BadRequestException("You are not authorized to perform delete operation.");
         }
-        return new ResponseEntity<>("deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Post deleted successfully", HttpStatus.OK);
     }
 
+    /*
+     *  Deletes comment of a main post. Only owner of the post or the user who commented, should be permitted
+     *  to delete the comment.
+     */
     @DeleteMapping("v1/secured/delete-main-post-comment")
-    public ResponseEntity<?> deletePostComment(
-            @RequestParam(value = "commentId") Long commentId,
-            @RequestParam(value = "postId") Long postId,
-            HttpServletRequest request) {
+    public ResponseEntity<?> deletePostComment(@RequestParam(value = "commentId") Long commentId,
+                                               HttpServletRequest request) {
         String loggedInUsername = request.getUserPrincipal().getName();
-        Post postById = this.postStorageService.getPostById(postId);
-        if (postById.getPostedBy().equals(loggedInUsername)) {
+        Optional<Comment> commentByCommentId = this.commentService.getCommentByCommentId(commentId);
+        if (commentByCommentId.isEmpty()) {
+            throw new ResourceNotFoundException("Comment Not Found");
+        }
+        String postedBy = commentByCommentId.get().getPost().getPostedBy();
+        if (postedBy.equals(loggedInUsername)) {
             this.commentService.deleteComment(commentId);
         } else {
             Comment comment = this.commentService.getCommentByUsernameAndCommentId(loggedInUsername, commentId);
+            if (comment == null) {
+                throw new BadRequestException("You are not authorized to perform delete operation.");
+            }
             this.commentService.deleteComment(comment.getId());
         }
-        return new ResponseEntity<>("deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Comment deleted successfully", HttpStatus.OK);
     }
 
+    /*
+     Updates the main post texts.
+    */
+    @PatchMapping("v1/secured/edit-post-text")
+    public ResponseEntity<?> updatePost(
+            @RequestParam(value = "postId") Long postId,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "album", required = false) String album, HttpServletRequest request) {
+
+        Post post = postStorageService.getPostById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
+        if (StringUtils.isNotEmpty(title)) {
+            post.setTitle(title);
+        }
+        if (StringUtils.isNotEmpty(description)) {
+            post.setDescription(description);
+        }
+        if (StringUtils.isNotEmpty(album)) {
+            post.setAlbumName(album);
+        }
+        String ip = request.getHeader("X-FORWARDED-FOR");
+        if (ip == null) {
+            ip = request.getRemoteAddr();
+        }
+        post.setIp(ip);
+        post.setLastUpdated(new Date());
+        Post savedPost = postStorageService.savePosts(post);
+        return new ResponseEntity<>(savedPost, HttpStatus.CREATED);
+    }
 }
+
+
+

@@ -10,8 +10,9 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 public class ImageDeleteDTO {
-    @NotNull
+    @NotNull ( message = "Media Id is required")
     private Long mediaId;
-    @NotNull
+
+    @NotNull ( message = "Media path is required")
     private String mediaLocation;
 }

@@ -15,7 +15,7 @@ public interface PostStorageRepository extends JpaRepository<Post, Long> {
     Optional<List<Post>> findPostByUsername(String username);
 
     @Query("SELECT p from Post p where p.id = :id")
-    Post findPostById(Long id);
+    Optional<Post> findPostById(Long id);
 
 }
 
