@@ -80,7 +80,7 @@ public record UserController(UserAndRoleService userAndRoleService, UserValidati
         AppLogger.info(UserController.class,
                 "User successfully created:" + "name:" + user.getFirstName() + " " + user.getLastName() + " "
                         + user.getEmail());
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
 
