@@ -2,32 +2,32 @@ package com.babydocs.email;
 
 import com.babydocs.constants.AppConstants;
 import com.babydocs.model.Mail;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+
 import javax.mail.internet.MimeMessage;
 
 @Component
-public class EmailService
-{
+@Slf4j
+public class EmailService {
     @Autowired
     private TemplateEngine templateEngine;
 
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public void sendMail(Mail mail, MailType mailType)
-    {
+    public void sendMail(Mail mail, MailType mailType) {
         if (mailType == MailType.PASSWORD_RESET) {
             setUpPasswordResetMail(mail);
         }
     }
 
-    private void setUpPasswordResetMail(Mail mail)
-    {
+    private void setUpPasswordResetMail(Mail mail) {
         final Context context = new Context();
         context.setVariable("app_name", AppConstants.APP_NAME);
         context.setVariable("team", AppConstants.TEAM);
@@ -42,8 +42,7 @@ public class EmailService
         sendPreparedMail(mail.getToEmail(), mail.getSubject(), body, true);
     }
 
-    private void sendPreparedMail(String to, String subject, String text, Boolean isHtml)
-    {
+    private void sendPreparedMail(String to, String subject, String text, Boolean isHtml) {
         try {
             MimeMessage mail = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mail, true);
@@ -52,6 +51,8 @@ public class EmailService
             helper.setText(text, isHtml);
             javaMailSender.send(mail);
         } catch (Exception e) {
+            log.error("Unable to send email:" + e);
+            throw new RuntimeException("Unable to send email:" + e);
 
         }
     }

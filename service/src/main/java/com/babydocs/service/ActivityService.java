@@ -1,0 +1,21 @@
+package com.babydocs.service;
+
+import com.babydocs.model.Activity;
+import com.babydocs.repository.ActivityRepository;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+@Data
+public class ActivityService {
+    private final ActivityRepository activityRepository;
+
+    @Transactional(rollbackFor = Exception.class)
+    public Activity saveActivity(Activity activity) {
+        return this.activityRepository.save(activity);
+    }
+
+}

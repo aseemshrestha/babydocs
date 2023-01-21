@@ -9,4 +9,15 @@ public class Constants {
     public enum Gender {
         MALE, FEMALE
     }
+
+    public enum ActivityType {
+        LOGIN,
+        LOGOUT,
+        LIKE,
+        SWITCH_POST_TYPE,
+        POST,
+        COMMENT,
+        CHANGE_PASS,
+        FOLLOW
+    }
 }

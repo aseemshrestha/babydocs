@@ -1,12 +1,10 @@
 package com.babydocs.model;
 
 import com.babydocs.annotations.EnumValidation;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,7 +28,6 @@ import java.util.Date;
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
     private Long id;
 
     @Column(nullable = false)
@@ -42,7 +39,6 @@ public class User implements Serializable {
     private String lastName;
 
     @Column(nullable = false, unique = true, length = 200)
-    @JsonIgnore
     private String username;
 
     @Column(nullable = false)
@@ -54,29 +50,28 @@ public class User implements Serializable {
     @NotEmpty(message = "Email is required")
     @Email
     private String email;
-    @JsonIgnore
+
     private String ip;
-    @JsonIgnore
+
     private String browser;
-    @JsonIgnore
+
     private int isActive;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created", nullable = false, updatable = false)
     @CreatedDate
-    @JsonIgnore
+
     private Date created;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastUpdated", nullable = false)
     @LastModifiedDate
-    @JsonIgnore
+
     private Date lastUpdated;
     @EnumValidation()
     private String gender;
     @ManyToOne
     @JoinColumn
-    @JsonIgnore
     private Role role;
 
 
