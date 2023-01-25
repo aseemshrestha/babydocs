@@ -1,6 +1,6 @@
 package com.babydocs.controller;
 
-import com.babydocs.Constants;
+import com.babydocs.constants.PostType;
 import com.babydocs.config.AWSConfig;
 import com.babydocs.exceptions.BadRequestException;
 import com.babydocs.exceptions.ResourceNotFoundException;
@@ -16,7 +16,7 @@ import com.babydocs.service.CommentService;
 import com.babydocs.service.MediaService;
 import com.babydocs.service.PostStorageService;
 import com.babydocs.service.UserAndRoleService;
-import com.babydocs.service.UserValidationService;
+import com.babydocs.service.ValidationService;
 import eu.bitwalker.useragentutils.UserAgent;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class DashboardController {
     private final PostStorageService postStorageService;
     private final AWSS3Service awss3Service;
     private final MediaService mediaService;
-    private final UserValidationService userValidationService;
+    private final ValidationService validationService;
     private final CommentService commentService;
 
 
@@ -77,7 +78,11 @@ public class DashboardController {
        By default, post are set as private, visible only to the user who submits the post.
      */
     @PostMapping("v1/secured/submit-post")
-    public ResponseEntity<Post> createPost(@RequestParam(value = "title") String title, @RequestParam(value = "description", required = false) String description, @RequestParam(value = "file", required = false) MultipartFile[] files, @RequestParam(value = "album", required = false) String album, HttpServletRequest request) {
+    public ResponseEntity<Post> createPost(@RequestParam(value = "title") String title,
+                                           @RequestParam(value = "description", required = false) String description,
+                                           @RequestParam(value = "file", required = false) MultipartFile[] files,
+                                           @RequestParam(value = "album", required = false) String album,
+                                           HttpServletRequest request) {
 
         long start = System.currentTimeMillis();
         Optional<List<Baby>> babyByUserName = babyService.findBabyByUserName(request.getUserPrincipal().getName());
@@ -105,14 +110,15 @@ public class DashboardController {
         post.setLastUpdated(new Date());
 
         post.setPostedBy(request.getUserPrincipal().getName());
-        post.setPostType(Constants.PostType.PRIVATE.name());
+        post.setPostType(PostType.PRIVATE.name());
         if (files != null) {
             List<String> uploadedFiles = awss3Service.uploadFileList(files, path);
             List<MediaFiles> mediaList = new ArrayList<>();
-
+            if (uploadedFiles.isEmpty()) {
+                throw new BadRequestException("Invalid content type for files");
+            }
             uploadedFiles.forEach(f -> {
                 MediaFiles media = new MediaFiles();
-                media.setMediaType("image");
                 media.setMediaLocation(AWSConfig.getS3EndPoint() + f);
                 media.setMediaDescription(description);
                 media.setCreated(new Date());
@@ -161,7 +167,7 @@ public class DashboardController {
      */
     @GetMapping("v1/secured/get-my-posts/{username}")
     public ResponseEntity<?> getMyPosts(@PathVariable("username") String username, HttpServletRequest request) throws Exception {
-        userValidationService.isLoggedUserValid(username, request);
+        validationService.isLoggedUserValid(username, request);
         Optional<List<Post>> posts = postStorageService.getPosts(username);
         return new ResponseEntity<>(posts, HttpStatus.OK);
     }
@@ -218,7 +224,7 @@ public class DashboardController {
             @RequestParam(value = "album", required = false) String album, HttpServletRequest request) throws Exception {
 
         Post post = postStorageService.getPostById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
-        userValidationService.isLoggedUserValid(post.getPostedBy(), request);
+        validationService.isLoggedUserValid(post.getPostedBy(), request);
         if (StringUtils.isNotEmpty(title)) {
             post.setTitle(title);
         }
@@ -247,7 +253,7 @@ public class DashboardController {
                                                                HttpServletRequest request) throws Exception {
         Post post = postStorageService.getPostById(postId).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         String username = request.getUserPrincipal().getName();
-        userValidationService.isLoggedUserValid(username, request);
+        validationService.isLoggedUserValid(username, request);
         String path = username.substring(0, username.indexOf('@'));
 
         if (files != null) {
@@ -257,7 +263,6 @@ public class DashboardController {
             uploadedFiles.forEach(f -> {
                 MediaFiles media = new MediaFiles();
                 media.setMediaLocation(AWSConfig.getS3EndPoint() + f);
-                media.setMediaType("image");
                 media.setMediaDescription(post.getDescription());
                 media.setCreated(new Date());
                 media.setLastUpdated(new Date());

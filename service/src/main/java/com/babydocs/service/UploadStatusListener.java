@@ -11,8 +11,8 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 public class UploadStatusListener implements ProgressListener {
-    PutObjectRequest putObjectRequest;
-    CountDownLatch signal;
+    final PutObjectRequest putObjectRequest;
+    final CountDownLatch signal;
 
     public UploadStatusListener(PutObjectRequest objectRequest, CountDownLatch signal) {
         this.putObjectRequest = objectRequest;

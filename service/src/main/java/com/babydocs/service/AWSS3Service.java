@@ -21,7 +21,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 
 
@@ -29,11 +34,11 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 @Slf4j
 public class AWSS3Service {
+    private final ValidationService validationService;
     @Autowired
     private AmazonS3 s3Client;
     @Value("${aws.s3.bucket}")
     private String bucket;
-
 
     /* file upload using putObjectApi */
     public String uploadFile(final MultipartFile multipartFile, String path) {
@@ -56,22 +61,25 @@ public class AWSS3Service {
                 .build();
         List<String> uploadedFiles = new ArrayList<>();
         List<PutObjectRequest> putObjectRequests = new ArrayList<>();
-
         Arrays.stream(multipartFile).forEach(mf -> {
-           // String dateTime = String.valueOf(LocalDateTime.now());
-          //  String encodedDate = Base64.getEncoder().encodeToString(dateTime.getBytes());
-            File file = convertMultiPartFileToFile(mf);
-            final String fileKey = Base64.getEncoder().encodeToString(path.getBytes());
-            var request = new PutObjectRequest(bucket, fileKey, file);
-            putObjectRequests.add(request);
-            uploadedFiles.add(fileKey);
+            if (validationService.isValidContentType(mf)) {
+                File file = convertMultiPartFileToFile(mf);
+                final String fileKey = Base64.getEncoder().encodeToString(path.getBytes());
+                var request = new PutObjectRequest(bucket, fileKey, file);
+                putObjectRequests.add(request);
+                uploadedFiles.add(fileKey);
+            }
         });
         Upload upload = null;
-        for (var putObjectRequest : putObjectRequests) {
-            upload = tm.upload(putObjectRequest);
+        if (uploadedFiles.size() > 0) {
+            for (var putObjectRequest : putObjectRequests) {
+                upload = tm.upload(putObjectRequest);
+            }
+            TransferMgr.waitForCompletion(Objects.requireNonNull(upload));
+            return uploadedFiles;
         }
-        TransferMgr.waitForCompletion(Objects.requireNonNull(upload));
-        return uploadedFiles;
+        return Collections.emptyList();
+
     }
 
     public void deleteFile(final String keyName) {

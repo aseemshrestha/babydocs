@@ -53,7 +53,6 @@ public record TokenController(UserAndRoleService userAndRoleService) {
                 .sign(Algorithm.HMAC512(JwtProperties.SECRET.getBytes()));
 
         AppLogger.info(UserController.class, "Auth Token created: " + auth_token);
-        System.out.println("Auth token created:" + auth_token);
         Map<String, String> tokenMap = new HashMap<>();
         tokenMap.put("access_token", JwtProperties.TOKEN_PREFIX + auth_token);
         tokenMap.put("refresh_token", tokenHeader);

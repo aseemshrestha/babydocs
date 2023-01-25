@@ -28,7 +28,6 @@ public class MediaFiles implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String mediaType;
     private String mediaLocation;
     private String mediaDescription;
     @Temporal(TemporalType.TIMESTAMP)

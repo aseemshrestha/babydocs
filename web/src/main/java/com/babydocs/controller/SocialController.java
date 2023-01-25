@@ -1,13 +1,13 @@
 package com.babydocs.controller;
 
-import com.babydocs.Constants.PostType;
+import com.babydocs.constants.PostType;
 import com.babydocs.exceptions.ResourceNotFoundException;
 import com.babydocs.model.Activity;
 import com.babydocs.model.Post;
 import com.babydocs.model.SwitchPostVisibilityDTO;
 import com.babydocs.service.ActivityService;
 import com.babydocs.service.PostStorageService;
-import com.babydocs.service.UserValidationService;
+import com.babydocs.service.ValidationService;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +27,7 @@ import java.util.Date;
 public class SocialController {
 
     private final PostStorageService postStorageService;
-    private final UserValidationService userValidationService;
+    private final ValidationService validationService;
 
     private final ActivityService activityService;
 
@@ -37,14 +37,13 @@ public class SocialController {
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         String existingPostType = postById.getPostType();
         final String username = request.getUserPrincipal().getName();
-        userValidationService.isLoggedUserValid(username, request);
+        validationService.isLoggedUserValid(username, request);
         PostType[] postTypes = PostType.values();
         boolean isValidPostType = Arrays.stream(postTypes).anyMatch(accType -> accType.name().equals(dto.postType));
         assert isValidPostType : "Not Valid Account Type";
         postById.setPostType(dto.getPostType());
         postById.setLastUpdated(new Date());
         var updatedPost = postStorageService.savePosts(postById);
-        // send notification to kafka - todo
         var activity = new Activity();
         activity.setPostId(updatedPost.getId());
         activity.setEventDate(new Date());

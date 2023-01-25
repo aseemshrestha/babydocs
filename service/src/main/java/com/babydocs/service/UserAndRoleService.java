@@ -4,6 +4,7 @@ import com.babydocs.model.Role;
 import com.babydocs.model.User;
 import com.babydocs.repository.RoleRepository;
 import com.babydocs.repository.UserRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

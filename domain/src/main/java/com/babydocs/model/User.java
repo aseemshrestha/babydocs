@@ -1,7 +1,11 @@
 package com.babydocs.model;
 
 import com.babydocs.annotations.EnumValidation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiParam;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -28,6 +32,7 @@ import java.util.Date;
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Long id;
 
     @Column(nullable = false)
@@ -50,28 +55,30 @@ public class User implements Serializable {
     @NotEmpty(message = "Email is required")
     @Email
     private String email;
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String ip;
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String browser;
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private int isActive;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created", nullable = false, updatable = false)
     @CreatedDate
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date created;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastUpdated", nullable = false)
     @LastModifiedDate
-
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Date lastUpdated;
     @EnumValidation()
     private String gender;
+
     @ManyToOne
     @JoinColumn
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private Role role;
 
 
