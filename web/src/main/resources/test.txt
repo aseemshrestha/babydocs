@@ -1,0 +1,7 @@
+Hibernate: create table activity (id bigint not null, event_date datetime(6), event_owner varchar(255), message varchar(255), post_id bigint, primary key (id)) engine=InnoDB
+Hibernate: create table baby (id bigint not null, created datetime(6) not null, dob date not null, first_name varchar(255) not null, gender varchar(255), last_name varchar(255) not null, last_updated datetime(6) not null, user_username varchar(200) not null, primary key (id)) engine=InnoDB
+Hibernate: create table comment (id bigint not null, comment varchar(255), commented_by varchar(255), created datetime(6) not null, last_updated datetime(6) not null, media_id bigint, post_id bigint, primary key (id)) engine=InnoDB
+Hibernate: create table hibernate_sequence (next_val bigint) engine=InnoDB
+Hibernate: insert into hibernate_sequence values ( 1 )
+Hibernate: create table likes (id bigint not null, last_updated datetime(6) not null, liked_by varchar(255), liked_on datetime(6) not null, post_id bigint, primary key (id)) engine=InnoDB
+2023-02-02 19:08:29.386  WARN 92463 --- [           main] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "create table likes (id bigint not null, last_updated datetime(6) not null, liked_by varchar(255), liked_on datetime(6) not null, post_id bigint, primary key (id)) engine=InnoDB" via JDBC Statement

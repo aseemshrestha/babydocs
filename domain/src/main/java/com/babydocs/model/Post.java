@@ -22,6 +22,7 @@ public class Post implements Serializable {
     @NotEmpty(message = "Title is required")
     @Column(nullable = false)
     private String title;
+    @Column(length = 10485760)
     private String description;
     private String albumName;
     private String ip;
@@ -29,11 +30,12 @@ public class Post implements Serializable {
     private String postType;
     @Column(nullable = false)
     private String postedBy;
+    private int commentCount;
+    private int likeCount;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created", nullable = false, updatable = false)
     @CreatedDate
     private Date created;
-
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastUpdated", nullable = false)
     @LastModifiedDate
@@ -42,4 +44,6 @@ public class Post implements Serializable {
     private List<Comment> comment;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "post", fetch = FetchType.LAZY)
     private List<MediaFiles> mediaFiles;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post", fetch = FetchType.LAZY)
+    private List<Likes> likes;
 }

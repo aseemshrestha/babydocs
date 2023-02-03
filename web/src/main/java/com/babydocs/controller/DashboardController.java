@@ -106,6 +106,8 @@ public class DashboardController {
 
         post.setIp(ip);
         post.setBrowser(userAgent.getBrowser() + "-" + userAgent.getOperatingSystem());
+        post.setCommentCount(0);
+        post.setLikeCount(0);
         post.setCreated(new Date());
         post.setLastUpdated(new Date());
 

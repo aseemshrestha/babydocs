@@ -86,7 +86,7 @@ public record UserController(UserAndRoleService userAndRoleService, ValidationSe
                         .name(user.getFirstName())
                         .username(user.getUsername())
                         .message(AppConstants.Welcome.WELCOME_MESSAGE).build();
-
+        System.out.println("Current Thread:" + Thread.currentThread().getName());
         emailService.sendMail(mail, MailType.WELCOME);
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }

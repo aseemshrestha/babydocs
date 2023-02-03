@@ -16,8 +16,8 @@ public class ActivityService {
 
     @Transactional(rollbackFor = Exception.class)
     @Async
-    public Activity saveActivity(Activity activity) {
-        return this.activityRepository.save(activity);
+    public void saveActivity(Activity activity) {
+        this.activityRepository.save(activity);
     }
 
 }

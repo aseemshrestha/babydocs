@@ -62,7 +62,7 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(text, true);
-            javaMailSender.send(mail);
+          //  javaMailSender.send(mail);
         } catch (Exception e) {
             log.error("Unable to send email:" + e);
             throw new RuntimeException("Unable to send email:" + e);

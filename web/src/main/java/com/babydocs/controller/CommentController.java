@@ -54,6 +54,9 @@ public class CommentController {
         comm.setLastUpdated(new Date());
         comm.setPost(postById);
         final Comment savedComment = this.commentService.saveComment(comm);
+        int commentCount = postById.getCommentCount();
+        int updatedCount = commentCount + 1;
+        postStorageService.updateCommentCount(updatedCount, postById.getId());
         return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
     }
 

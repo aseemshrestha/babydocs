@@ -35,4 +35,11 @@ public class PostStorageService {
         this.postStorageRepository.deleteById(id);
     }
 
+    public void updateCommentCount(int commentCount, Long id) {
+        this.postStorageRepository.updateCommentCount(commentCount, id);
+    }
+
+    public void updateLikeCount(int likeCount, Long id) {
+        this.postStorageRepository.updateLikeCount(likeCount, id);
+    }
 }
