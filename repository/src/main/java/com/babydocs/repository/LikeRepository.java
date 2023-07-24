@@ -11,4 +11,5 @@ public interface LikeRepository extends JpaRepository<Likes, Long> {
     @Modifying
     @Query("DELETE from Likes l where l.id = :id")
     void deleteByLikeId(Long id);
+    //test comment
 }
