@@ -11,7 +11,7 @@ import java.util.Arrays;
 @Service
 public class ValidationService {
     public void isLoggedUserValid(String username, HttpServletRequest request) {
-
+        // test comment
         if (request.getUserPrincipal() == null) {
             throw new BadRequestException("Bad Request with username:");
         }
